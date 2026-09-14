@@ -35,6 +35,9 @@ export type ConnectedAccount = {
   refreshToken: string;
   expiresAt: string;
   createdAt: string;
+  connectionType?: "demo" | "oauth";
+  scopes?: string[];
+  tokenType?: string;
 };
 
 export type SocialPost = {

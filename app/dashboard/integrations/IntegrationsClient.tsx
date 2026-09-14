@@ -31,6 +31,12 @@ export function IntegrationsClient({
 
   async function connect(platform: Platform) {
     setBusy(platform);
+
+    if (oauthConfigured[platform] && platform !== "x") {
+      router.push(`/api/oauth/${platform}/start`);
+      return;
+    }
+
     await fetch("/api/accounts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -64,7 +70,15 @@ export function IntegrationsClient({
                 <div>
                   <h2 className="text-lg font-semibold text-white">{platform.label}</h2>
                   <p className="text-xs text-slate-500">
-                    {account ? "Demo connector active" : readyForRealOAuth ? "OAuth credentials detected" : "Credentials needed"}
+                    {account
+                      ? account.connectionType === "oauth"
+                        ? "OAuth connected"
+                        : "Demo connector active"
+                      : platform.id === "x"
+                        ? "Skipped for now"
+                        : readyForRealOAuth
+                          ? "OAuth credentials detected"
+                          : "Credentials needed"}
                   </p>
                 </div>
               </div>
@@ -73,9 +87,11 @@ export function IntegrationsClient({
 
             <p className="mt-5 min-h-12 text-sm leading-6 text-slate-400">
               {account
-                ? `Connected as ${account.displayName}. This is stored through the backend and can be replaced with real OAuth once credentials are available.`
-                : readyForRealOAuth
-                  ? "Credentials are present. The next step is wiring the provider-specific OAuth redirect and callback exchange."
+                ? `Connected as ${account.displayName}. ${account.connectionType === "oauth" ? "This account is authenticated through real OAuth." : "This demo record can be replaced with real OAuth."}`
+                : platform.id === "x"
+                  ? "X/Twitter is skipped for now because its posting API requires a paid developer tier."
+                  : readyForRealOAuth
+                  ? "Credentials are present. Click connect to authorize the real account through the provider."
                   : "Real OAuth needs a developer app client ID, client secret, and callback URL for this platform. Demo connect keeps the product flow usable now."}
             </p>
             {account ? (
@@ -83,8 +99,12 @@ export function IntegrationsClient({
                 {busy === account.id ? "Disconnecting..." : "Disconnect"}
               </button>
             ) : (
-              <button onClick={() => connect(platform.id)} disabled={busy === platform.id} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-retro-cyan px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:brightness-110 disabled:opacity-60">
-                {busy === platform.id ? "Connecting..." : "Connect demo"}
+              <button
+                onClick={() => connect(platform.id)}
+                disabled={busy === platform.id || platform.id === "x"}
+                className="mt-5 inline-flex items-center gap-2 rounded-xl bg-retro-cyan px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {busy === platform.id ? "Connecting..." : platform.id === "x" ? "Skipped" : readyForRealOAuth ? "Connect account" : "Connect demo"}
                 <ExternalLink className="h-4 w-4" />
               </button>
             )}
@@ -94,7 +114,7 @@ export function IntegrationsClient({
       <div className="rounded-3xl border border-retro-yellow/25 bg-retro-yellow/10 p-6 md:col-span-2">
         <h3 className="text-base font-semibold text-retro-yellow">Why it says “Connect demo”</h3>
         <p className="mt-2 text-sm leading-6 text-slate-300">
-          The UI and backend connector flow are ready, but real account connection requires developer app credentials from X, LinkedIn, Meta/Facebook, and Instagram. Once you provide those values, I can replace demo connect with full OAuth redirects/callbacks.
+          LinkedIn and Meta OAuth are now wired. Facebook and Instagram use Meta credentials; Instagram publishing still requires an Instagram Business/Creator account connected to a Facebook Page. X is skipped for now because the posting API is paid.
         </p>
       </div>
     </div>

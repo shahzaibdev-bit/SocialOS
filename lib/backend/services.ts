@@ -1,4 +1,4 @@
-import { createId, createSecret, hashSecret } from "./crypto";
+import { createId, createSecret, encryptSecret, hashSecret } from "./crypto";
 import { readDb, updateDb } from "./db";
 import { cacheKeysForUser, deleteCache, getCache, invalidateUserCache, setCache } from "./redis";
 import type { BrandProfile, ConnectedAccount, Platform, PostStatus, SocialPost } from "./types";
@@ -77,10 +77,67 @@ export async function connectMockAccount(userId: string, platformRaw: string) {
       refreshToken: `encrypted_demo_refresh_${platform}`,
       expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString(),
       createdAt: now,
+      connectionType: "demo",
+      scopes: [],
+      tokenType: "Bearer",
     };
 
     db.connectedAccounts.push(account);
     return account;
+  });
+
+  await invalidateUserCache(userId);
+  return account;
+}
+
+export async function upsertOAuthAccount(
+  userId: string,
+  input: {
+    platform: Platform;
+    platformAccountId: string;
+    displayName: string;
+    accessToken: string;
+    refreshToken?: string;
+    expiresAt: string;
+    scopes?: string[];
+    tokenType?: string;
+  },
+) {
+  const account = await updateDb((db) => {
+    const now = new Date().toISOString();
+    const existing = db.connectedAccounts.find(
+      (candidate) => candidate.userId === userId && candidate.platform === input.platform,
+    );
+
+    if (existing) {
+      existing.platformAccountId = input.platformAccountId;
+      existing.displayName = input.displayName;
+      existing.accessToken = encryptSecret(input.accessToken);
+      existing.refreshToken = encryptSecret(input.refreshToken ?? "");
+      existing.expiresAt = input.expiresAt;
+      existing.connectionType = "oauth";
+      existing.scopes = input.scopes ?? [];
+      existing.tokenType = input.tokenType ?? "Bearer";
+      return existing;
+    }
+
+    const created: ConnectedAccount = {
+      id: createId("acct"),
+      userId,
+      platform: input.platform,
+      platformAccountId: input.platformAccountId,
+      displayName: input.displayName,
+      accessToken: encryptSecret(input.accessToken),
+      refreshToken: encryptSecret(input.refreshToken ?? ""),
+      expiresAt: input.expiresAt,
+      createdAt: now,
+      connectionType: "oauth",
+      scopes: input.scopes ?? [],
+      tokenType: input.tokenType ?? "Bearer",
+    };
+
+    db.connectedAccounts.push(created);
+    return created;
   });
 
   await invalidateUserCache(userId);

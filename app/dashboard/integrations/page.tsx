@@ -9,9 +9,9 @@ export default async function IntegrationsPage() {
   const user = await getCurrentUser();
   const data = user ? await listDashboardData(user.id) : { accounts: [] };
   const oauthConfigured = {
-    x: Boolean(process.env.X_CLIENT_ID && process.env.X_CLIENT_SECRET),
+    x: false,
     linkedin: Boolean(process.env.LINKEDIN_CLIENT_ID && process.env.LINKEDIN_CLIENT_SECRET),
-    instagram: Boolean(process.env.INSTAGRAM_CLIENT_ID && process.env.INSTAGRAM_CLIENT_SECRET),
+    instagram: Boolean(process.env.META_APP_ID && process.env.META_APP_SECRET),
     facebook: Boolean(process.env.META_APP_ID && process.env.META_APP_SECRET),
   };
 
