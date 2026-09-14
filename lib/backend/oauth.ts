@@ -16,6 +16,14 @@ type TokenResponse = {
 };
 
 const stateCookieName = "omnisocial_oauth_state";
+const defaultLinkedInScopes = ["openid", "profile", "email", "w_member_social"];
+
+function getEnvList(value?: string) {
+  return value
+    ?.split(/[,\s]+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
 
 export function getOAuthConfigured(platform: Platform) {
   if (platform === "linkedin") {
@@ -36,12 +44,14 @@ export function getOAuthRedirectUri(request: Request, platform: OAuthPlatform) {
 
 function getConfig(platform: OAuthPlatform) {
   if (platform === "linkedin") {
+    const envScopes = getEnvList(process.env.LINKEDIN_SCOPES);
+
     return {
       clientId: process.env.LINKEDIN_CLIENT_ID,
       clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
       authorizeUrl: "https://www.linkedin.com/oauth/v2/authorization",
       tokenUrl: "https://www.linkedin.com/oauth/v2/accessToken",
-      scopes: ["openid", "profile", "email", "w_member_social", "r_member_social", "r_member_postAnalytics"],
+      scopes: envScopes?.length ? envScopes : defaultLinkedInScopes,
     };
   }
 
