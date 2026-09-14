@@ -74,6 +74,13 @@ export default function PrivacyPage() {
               workspace data by contacting the project owner. Disconnecting an integration removes the stored connection
               record from the application.
             </p>
+            <p>
+              Detailed deletion instructions are available at{" "}
+              <Link className="text-retro-yellow underline" href="/data-deletion">
+                {appUrl}/data-deletion
+              </Link>
+              .
+            </p>
           </section>
 
           <section className="mt-8 space-y-4 text-gray-300">
