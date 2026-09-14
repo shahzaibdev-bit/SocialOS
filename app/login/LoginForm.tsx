@@ -13,7 +13,8 @@ export function LoginForm() {
     event.preventDefault();
     setLoading(true);
     setError("");
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
 
     const response = await fetch("/api/auth/login", {
       method: "POST",

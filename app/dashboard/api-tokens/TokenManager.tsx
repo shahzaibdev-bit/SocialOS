@@ -13,20 +13,24 @@ type TokenRecord = {
 export function TokenManager({ tokens }: { tokens: TokenRecord[] }) {
   const router = useRouter();
   const [newToken, setNewToken] = useState("");
+  const [loading, setLoading] = useState(false);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
+    setLoading(true);
     const response = await fetch("/api/tokens", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: form.get("name") }),
     });
     const result = await response.json();
+    setLoading(false);
 
     if (result.ok) {
       setNewToken(result.data.token.token);
-      event.currentTarget.reset();
+      formElement.reset();
       router.refresh();
     }
   }
@@ -37,7 +41,9 @@ export function TokenManager({ tokens }: { tokens: TokenRecord[] }) {
         <h2 className="text-xl font-semibold text-white">Generate MCP Token</h2>
         <p className="mt-2 text-sm text-slate-400">Use these tokens as Bearer credentials for remote AI agents.</p>
         <input name="name" placeholder="Claude Desktop / Cursor token" className="mt-5 w-full rounded-2xl border border-white/10 bg-black/30 p-4 text-sm text-white outline-none transition focus:border-retro-cyan" />
-        <button className="mt-5 rounded-2xl bg-retro-magenta px-6 py-3 text-sm font-semibold text-white transition hover:brightness-110">Generate Token</button>
+        <button disabled={loading} className="mt-5 rounded-2xl bg-retro-magenta px-6 py-3 text-sm font-semibold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60">
+          {loading ? "Generating..." : "Generate Token"}
+        </button>
         {newToken && (
           <div className="mt-5 rounded-2xl border border-retro-yellow/30 bg-retro-yellow/10 p-4">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-retro-yellow">Copy this token now</p>

@@ -37,13 +37,7 @@ export function IntegrationsClient({
       return;
     }
 
-    await fetch("/api/accounts", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ platform }),
-    });
     setBusy("");
-    router.refresh();
   }
 
   async function disconnect(id: string) {
@@ -73,9 +67,9 @@ export function IntegrationsClient({
                     {account
                       ? account.connectionType === "oauth"
                         ? "OAuth connected"
-                        : "Demo connector active"
+                      : "Legacy demo connector"
                       : platform.id === "x"
-                        ? "Skipped for now"
+                        ? "Skipped"
                         : readyForRealOAuth
                           ? "OAuth credentials detected"
                           : "Credentials needed"}
@@ -87,12 +81,12 @@ export function IntegrationsClient({
 
             <p className="mt-5 min-h-12 text-sm leading-6 text-slate-400">
               {account
-                ? `Connected as ${account.displayName}. ${account.connectionType === "oauth" ? "This account is authenticated through real OAuth." : "This demo record can be replaced with real OAuth."}`
+                ? `Connected as ${account.displayName}. ${account.connectionType === "oauth" ? "This account is authenticated through real OAuth." : "Disconnect this legacy demo record and reconnect with real OAuth."}`
                 : platform.id === "x"
                   ? "X/Twitter is skipped for now because its posting API requires a paid developer tier."
                   : readyForRealOAuth
                   ? "Credentials are present. Click connect to authorize the real account through the provider."
-                  : "Real OAuth needs a developer app client ID, client secret, and callback URL for this platform. Demo connect keeps the product flow usable now."}
+                  : "Real OAuth needs a developer app client ID, client secret, and callback URL for this platform."}
             </p>
             {account ? (
               <button onClick={() => disconnect(account.id)} disabled={busy === account.id} className="mt-5 rounded-xl border border-retro-magenta/40 px-4 py-2.5 text-sm font-semibold text-retro-magenta transition hover:bg-retro-magenta hover:text-white disabled:opacity-60">
@@ -101,10 +95,10 @@ export function IntegrationsClient({
             ) : (
               <button
                 onClick={() => connect(platform.id)}
-                disabled={busy === platform.id || platform.id === "x"}
+                disabled={busy === platform.id || platform.id === "x" || !readyForRealOAuth}
                 className="mt-5 inline-flex items-center gap-2 rounded-xl bg-retro-cyan px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {busy === platform.id ? "Connecting..." : platform.id === "x" ? "Skipped" : readyForRealOAuth ? "Connect account" : "Connect demo"}
+                {busy === platform.id ? "Connecting..." : platform.id === "x" ? "Skipped" : readyForRealOAuth ? "Connect account" : "Add credentials"}
                 <ExternalLink className="h-4 w-4" />
               </button>
             )}
@@ -112,9 +106,9 @@ export function IntegrationsClient({
         );
       })}
       <div className="rounded-3xl border border-retro-yellow/25 bg-retro-yellow/10 p-6 md:col-span-2">
-        <h3 className="text-base font-semibold text-retro-yellow">Why it says “Connect demo”</h3>
+        <h3 className="text-base font-semibold text-retro-yellow">Connection requirements</h3>
         <p className="mt-2 text-sm leading-6 text-slate-300">
-          LinkedIn and Meta OAuth are now wired. Facebook and Instagram use Meta credentials; Instagram publishing still requires an Instagram Business/Creator account connected to a Facebook Page. X is skipped for now because the posting API is paid.
+          LinkedIn and Meta OAuth are wired for real provider login. Instagram publishing still requires an Instagram Business or Creator account connected to a Facebook Page. X is skipped for now because its posting API requires a paid developer tier.
         </p>
       </div>
     </div>

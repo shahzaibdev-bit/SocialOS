@@ -41,7 +41,7 @@ function getConfig(platform: OAuthPlatform) {
       clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
       authorizeUrl: "https://www.linkedin.com/oauth/v2/authorization",
       tokenUrl: "https://www.linkedin.com/oauth/v2/accessToken",
-      scopes: ["openid", "profile", "email", "w_member_social"],
+      scopes: ["openid", "profile", "email", "w_member_social", "r_member_social", "r_member_postAnalytics"],
     };
   }
 

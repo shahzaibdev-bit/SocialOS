@@ -24,7 +24,7 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <PageTitle title="Command Center" subtitle="Your AI-native social media backend is now active: accounts, approvals, scheduling, brand voice, and MCP agent access." />
+      <PageTitle title="Command Center" subtitle="Manage connected accounts, scheduled content, approvals, analytics, and model providers from one production workspace." />
       <div className="grid gap-5 md:grid-cols-4">
         {stats.map(({ label, value, Icon, tint }) => (
           <Panel key={label} className={`bg-gradient-to-br ${tint} to-slate-950`}>
@@ -41,13 +41,13 @@ export default async function DashboardPage() {
       <Panel className="mt-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-xl font-semibold text-white">System Flow</h2>
-            <p className="mt-1 text-sm text-slate-400">The production path your AI agents and dashboard share.</p>
+            <h2 className="text-xl font-semibold text-white">Publishing workflow</h2>
+            <p className="mt-1 text-sm text-slate-400">A controlled path from authenticated accounts to approved scheduled content.</p>
           </div>
-          <span className="rounded-full bg-retro-cyan/10 px-3 py-1 text-xs font-medium text-retro-cyan">Human approved</span>
+          <span className="rounded-full bg-retro-cyan/10 px-3 py-1 text-xs font-medium text-retro-cyan">Approval first</span>
         </div>
         <div className="mt-6 grid gap-4 md:grid-cols-4">
-          {["OAuth Mock Connect", "AI Draft", "Human Approval", "Scheduled Queue"].map((step, index) => (
+          {["OAuth Connection", "Draft Creation", "Approval Review", "Scheduled Publishing"].map((step, index) => (
             <div key={step} className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-retro-magenta">0{index + 1}</p>
               <p className="mt-3 text-sm font-medium text-slate-200">{step}</p>
@@ -59,19 +59,19 @@ export default async function DashboardPage() {
         {[
           {
             title: "Add model keys",
-            text: "Connect OpenAI, OpenRouter, or Gemini so AI drafts and strategies use your own provider.",
+            text: "Store encrypted OpenAI, OpenRouter, or Gemini keys so each user can run their own preferred model.",
             href: "/dashboard/model-keys",
             icon: KeyRound,
           },
           {
             title: "Generate strategy",
-            text: "Ask for LinkedIn, Facebook, Instagram, or combined analytics strategy from your workspace data.",
+            text: "Review LinkedIn metrics when permissions are granted and turn performance data into a practical plan.",
             href: "/dashboard/analytics",
             icon: BarChart3,
           },
           {
             title: "Draft with AI",
-            text: "Create campaign-ready content and route it through approval before publishing.",
+            text: "Create campaign-ready content and route it through a manager approval step before publishing.",
             href: "/dashboard/chat",
             icon: Sparkles,
           },

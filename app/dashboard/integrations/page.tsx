@@ -17,7 +17,7 @@ export default async function IntegrationsPage() {
 
   return (
     <>
-      <PageTitle title="Integrations" subtitle="Connect X, LinkedIn, Instagram, and Facebook. This build can run demo connectors now; real OAuth requires platform developer app credentials." />
+      <PageTitle title="Integrations" subtitle="Connect LinkedIn, Facebook, and Instagram through real OAuth. X is visible for roadmap tracking but remains disabled while its API tier is paid." />
       <IntegrationsClient accounts={data.accounts} oauthConfigured={oauthConfigured} />
     </>
   );

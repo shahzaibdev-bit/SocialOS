@@ -20,7 +20,8 @@ export function ModelKeysClient({ keys }: { keys: SafeAiApiKey[] }) {
     event.preventDefault();
     setLoading(true);
     setMessage("");
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
 
     const response = await fetch("/api/ai-keys", {
       method: "POST",
@@ -37,7 +38,7 @@ export function ModelKeysClient({ keys }: { keys: SafeAiApiKey[] }) {
     setLoading(false);
     setMessage(result.ok ? "API key saved securely." : result.error);
     if (result.ok) {
-      event.currentTarget.reset();
+      formElement.reset();
       router.refresh();
     }
   }

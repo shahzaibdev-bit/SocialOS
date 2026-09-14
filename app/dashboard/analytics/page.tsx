@@ -13,7 +13,7 @@ export default async function AnalyticsPage() {
     <>
       <PageTitle
         title="Analytics & Strategy"
-        subtitle="Ask for platform-specific or combined performance insights. Social API metrics will plug in here; current strategy uses your workspace posts and AI provider keys."
+        subtitle="Ask for platform-specific or combined performance insights. LinkedIn analytics are checked through your real OAuth connection when the required LinkedIn permissions are granted."
       />
       <div className="grid gap-5 md:grid-cols-4">
         {[

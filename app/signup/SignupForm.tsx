@@ -13,7 +13,8 @@ export function SignupForm() {
     event.preventDefault();
     setLoading(true);
     setError("");
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
 
     try {
       const response = await fetch("/api/auth/signup", {

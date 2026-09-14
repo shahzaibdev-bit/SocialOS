@@ -14,12 +14,16 @@ const platforms: Array<{ id: Platform; label: string }> = [
 export function PostComposer() {
   const router = useRouter();
   const [message, setMessage] = useState("");
+  const [saving, setSaving] = useState(false);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     const targetPlatforms = platforms.filter((platform) => form.get(platform.id)).map((platform) => platform.id);
     const status = String(form.get("status"));
+    setSaving(true);
+    setMessage("");
 
     const response = await fetch("/api/posts", {
       method: "POST",
@@ -33,10 +37,11 @@ export function PostComposer() {
       }),
     });
     const result = await response.json();
+    setSaving(false);
 
     setMessage(result.ok ? "Post saved." : result.error);
     if (result.ok) {
-      event.currentTarget.reset();
+      formElement.reset();
       router.refresh();
     }
   }
@@ -64,7 +69,9 @@ export function PostComposer() {
           <option value="pending_approval">Pending Approval</option>
           <option value="scheduled">Scheduled</option>
         </select>
-        <button className="rounded-2xl bg-retro-magenta px-6 py-3 text-sm font-semibold text-white transition hover:brightness-110">Save Post</button>
+        <button disabled={saving} className="rounded-2xl bg-retro-magenta px-6 py-3 text-sm font-semibold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60">
+          {saving ? "Saving..." : "Save Post"}
+        </button>
       </div>
       {message && <p className="mt-4 text-sm text-retro-cyan">{message}</p>}
     </form>

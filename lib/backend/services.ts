@@ -1,6 +1,7 @@
 import { createId, createSecret, encryptSecret, hashSecret } from "./crypto";
 import { defaultModels, generateWithProvider } from "./ai";
 import { readDb, updateDb } from "./db";
+import { getLinkedInLatestAnalytics } from "./linkedin";
 import { cacheKeysForUser, deleteCache, getCache, invalidateUserCache, setCache } from "./redis";
 import type { AiProvider, BrandProfile, ConnectedAccount, Platform, PostStatus, SafeAiApiKey, SocialPost } from "./types";
 
@@ -504,10 +505,39 @@ export async function generateDraftFromPrompt(userId: string, prompt: string) {
 }
 
 export async function generateAnalyticsStrategy(userId: string, prompt: string, provider?: AiProvider) {
-  const [dashboard, key] = await Promise.all([listDashboardData(userId), getUsableAiKey(userId, provider)]);
+  const [dashboard, key, linkedInAnalytics] = await Promise.all([
+    listDashboardData(userId),
+    getUsableAiKey(userId, provider),
+    getLinkedInLatestAnalytics(userId),
+  ]);
+
+  const linkedInContext = linkedInAnalytics.available
+    ? [
+        "LinkedIn live account context:",
+        `Account: ${linkedInAnalytics.accountName ?? "LinkedIn"}`,
+        linkedInAnalytics.latestPost
+          ? `Latest post: ${linkedInAnalytics.latestPost.text.slice(0, 500)}`
+          : "Latest post: no member posts returned",
+        linkedInAnalytics.latestPost?.publishedAt ? `Published at: ${linkedInAnalytics.latestPost.publishedAt}` : "",
+        linkedInAnalytics.metrics
+          ? `Metrics: impressions=${linkedInAnalytics.metrics.IMPRESSION ?? "unknown"}, reached=${linkedInAnalytics.metrics.MEMBERS_REACHED ?? "unknown"}, reactions=${linkedInAnalytics.metrics.REACTION ?? "unknown"}, comments=${linkedInAnalytics.metrics.COMMENT ?? "unknown"}, reshares=${linkedInAnalytics.metrics.RESHARE ?? "unknown"}`
+          : "Metrics: no analytics metrics returned",
+      ]
+        .filter(Boolean)
+        .join("\n")
+    : [
+        "LinkedIn live account context:",
+        `Status: ${linkedInAnalytics.connected ? "connected, analytics unavailable" : "not connected"}`,
+        `Reason: ${linkedInAnalytics.reason}`,
+        `Required scopes: ${linkedInAnalytics.requiredScopes?.join(", ") ?? "r_member_social, r_member_postAnalytics"}`,
+        linkedInAnalytics.grantedScopes?.length ? `Granted scopes: ${linkedInAnalytics.grantedScopes.join(", ")}` : "",
+      ]
+        .filter(Boolean)
+        .join("\n");
+
   const strategy = await generateWithProvider({
     key,
-    prompt,
+    prompt: `${prompt}\n\n${linkedInContext}\n\nIf the user asks for LinkedIn impressions and the live metric is available, answer with the real impression number. If analytics are unavailable, say exactly what permission or reconnect step is missing instead of claiming you have no account access.`,
     purpose: "strategy",
     posts: dashboard.posts,
   });
@@ -517,5 +547,6 @@ export async function generateAnalyticsStrategy(userId: string, prompt: string, 
     provider: key?.provider ?? "local",
     model: key?.defaultModel ?? "local-fallback",
     stats: dashboard.stats,
+    linkedInAnalytics,
   };
 }
