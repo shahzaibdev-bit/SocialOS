@@ -3,11 +3,11 @@ import { LoginForm } from "./LoginForm";
 
 export default function LoginPage() {
   return (
-    <main className="min-h-screen bg-retro-bg px-4 py-12 text-white">
-      <div className="mx-auto max-w-md border-4 border-retro-cyan bg-[#111118] p-8 shadow-retro-cyan">
-        <Link href="/" className="font-pixel text-xs text-retro-yellow">← HOME</Link>
-        <h1 className="mt-8 font-pixel text-3xl uppercase leading-relaxed">Operator Login</h1>
-        <p className="mt-4 mb-8 text-gray-400">Access your OmniSocial OS command center.</p>
+    <main className="grid min-h-screen place-items-center bg-[radial-gradient(circle_at_top_left,rgba(0,240,255,0.16),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(255,0,60,0.16),transparent_34%),#070A12] px-4 py-12 text-white">
+      <div className="w-full max-w-md rounded-3xl border border-white/10 bg-slate-950/85 p-8 shadow-[0_30px_120px_rgba(0,0,0,0.42)] backdrop-blur-xl">
+        <Link href="/" className="text-sm font-semibold text-retro-cyan hover:text-retro-yellow">← Home</Link>
+        <h1 className="mt-8 text-3xl font-semibold tracking-tight">Welcome back</h1>
+        <p className="mt-3 mb-8 text-sm leading-6 text-slate-400">Access your OmniSocial OS command center.</p>
         <LoginForm />
       </div>
     </main>

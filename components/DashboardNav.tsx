@@ -2,15 +2,17 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Bot, CheckCircle2, FileText, Home, KeyRound, Link2, LogOut, Palette } from "lucide-react";
+import { BarChart3, Bot, CheckCircle2, FileText, Home, KeyRound, Link2, LogOut, Palette, ShieldCheck } from "lucide-react";
 
 const links = [
   { href: "/dashboard", label: "Overview", icon: Home },
   { href: "/dashboard/integrations", label: "Integrations", icon: Link2 },
   { href: "/dashboard/posts", label: "Posts", icon: FileText },
   { href: "/dashboard/approvals", label: "Approvals", icon: CheckCircle2 },
+  { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/dashboard/brand", label: "Brand Voice", icon: Palette },
   { href: "/dashboard/chat", label: "AI Studio", icon: Bot },
+  { href: "/dashboard/model-keys", label: "Model Keys", icon: ShieldCheck },
   { href: "/dashboard/api-tokens", label: "MCP Tokens", icon: KeyRound },
 ];
 

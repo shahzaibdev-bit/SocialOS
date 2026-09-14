@@ -1,5 +1,5 @@
 import type {Metadata} from 'next';
-import { Press_Start_2P, JetBrains_Mono, VT323 } from 'next/font/google';
+import { Inter, Press_Start_2P, JetBrains_Mono, VT323 } from 'next/font/google';
 import './globals.css'; // Global styles
 import { GlobalSpark } from "@/components/react-bits/GlobalSpark";
 
@@ -20,6 +20,11 @@ const vt323 = VT323({
   variable: '--font-vt323',
 });
 
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+});
+
 export const metadata: Metadata = {
   title: 'BugChase OS',
   description: 'The first multi-tenant AI social media OS.',
@@ -37,12 +42,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({children}: {children: React.ReactNode}) {
   return (
-    <html lang="en" className={`${pressStart2P.variable} ${jetbrainsMono.variable} ${vt323.variable}`}>
-      <body className="min-h-screen bg-retro-bg text-white font-mono crt" suppressHydrationWarning>
+    <html lang="en" className={`${pressStart2P.variable} ${jetbrainsMono.variable} ${vt323.variable} ${inter.variable}`}>
+      <body className="min-h-screen bg-retro-bg text-white font-sans" suppressHydrationWarning>
         <GlobalSpark sparkColor="#00F0FF" />
         {children}
       </body>
     </html>
   );
 }
-

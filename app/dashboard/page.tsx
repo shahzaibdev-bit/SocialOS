@@ -1,7 +1,8 @@
 import { getCurrentUser } from "@/lib/backend/auth";
 import { listDashboardData } from "@/lib/backend/services";
 import { PageTitle, Panel } from "@/components/Panel";
-import { CalendarClock, CheckCircle2, Link2, Send } from "lucide-react";
+import Link from "next/link";
+import { BarChart3, CalendarClock, CheckCircle2, KeyRound, Link2, Send, Sparkles } from "lucide-react";
 import type { ComponentType } from "react";
 
 export const dynamic = "force-dynamic";
@@ -54,6 +55,37 @@ export default async function DashboardPage() {
           ))}
         </div>
       </Panel>
+      <div className="mt-6 grid gap-5 lg:grid-cols-3">
+        {[
+          {
+            title: "Add model keys",
+            text: "Connect OpenAI, OpenRouter, or Gemini so AI drafts and strategies use your own provider.",
+            href: "/dashboard/model-keys",
+            icon: KeyRound,
+          },
+          {
+            title: "Generate strategy",
+            text: "Ask for LinkedIn, Facebook, Instagram, or combined analytics strategy from your workspace data.",
+            href: "/dashboard/analytics",
+            icon: BarChart3,
+          },
+          {
+            title: "Draft with AI",
+            text: "Create campaign-ready content and route it through approval before publishing.",
+            href: "/dashboard/chat",
+            icon: Sparkles,
+          },
+        ].map((item) => {
+          const Icon = item.icon;
+          return (
+            <Link key={item.href} href={item.href} className="group rounded-3xl border border-white/10 bg-slate-950/70 p-6 transition hover:-translate-y-1 hover:border-retro-cyan/50 hover:bg-slate-950">
+              <Icon className="h-6 w-6 text-retro-cyan" />
+              <h3 className="mt-4 text-lg font-semibold text-white">{item.title}</h3>
+              <p className="mt-2 text-sm leading-6 text-slate-400">{item.text}</p>
+            </Link>
+          );
+        })}
+      </div>
     </>
   );
 }

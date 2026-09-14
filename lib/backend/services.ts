@@ -1,7 +1,8 @@
 import { createId, createSecret, encryptSecret, hashSecret } from "./crypto";
+import { defaultModels, generateWithProvider } from "./ai";
 import { readDb, updateDb } from "./db";
 import { cacheKeysForUser, deleteCache, getCache, invalidateUserCache, setCache } from "./redis";
-import type { BrandProfile, ConnectedAccount, Platform, PostStatus, SocialPost } from "./types";
+import type { AiProvider, BrandProfile, ConnectedAccount, Platform, PostStatus, SafeAiApiKey, SocialPost } from "./types";
 
 const platformLabels: Record<Platform, string> = {
   x: "X",
@@ -322,6 +323,144 @@ export async function createMcpToken(userId: string, name: string) {
   return { ...token, token: rawToken };
 }
 
+export async function listAiApiKeys(userId: string): Promise<SafeAiApiKey[]> {
+  const db = await readDb();
+  const user = db.users.find((candidate) => candidate.id === userId);
+
+  return (
+    user?.aiApiKeys?.map(({ encryptedKey: _encryptedKey, ...key }) => ({
+      ...key,
+      label: key.label || key.provider,
+    })) ?? []
+  );
+}
+
+export async function saveAiApiKey(
+  userId: string,
+  input: {
+    provider: AiProvider;
+    label?: string;
+    apiKey: string;
+    defaultModel?: string;
+    isDefault?: boolean;
+  },
+) {
+  if (!["openai", "openrouter", "gemini"].includes(input.provider)) {
+    throw new Error("Unsupported AI provider.");
+  }
+
+  if (!input.apiKey.trim()) {
+    throw new Error("API key is required.");
+  }
+
+  const saved = await updateDb((db) => {
+    const user = db.users.find((candidate) => candidate.id === userId);
+
+    if (!user) {
+      throw new Error("User not found.");
+    }
+
+    user.aiApiKeys ??= [];
+
+    if (input.isDefault || !user.aiApiKeys.some((key) => key.isDefault)) {
+      user.aiApiKeys.forEach((key) => {
+        key.isDefault = false;
+      });
+    }
+
+    const now = new Date().toISOString();
+    const existing = user.aiApiKeys.find((key) => key.provider === input.provider);
+    const model = input.defaultModel?.trim() || defaultModels[input.provider];
+
+    if (existing) {
+      existing.label = input.label?.trim() || platformProviderLabel(input.provider);
+      existing.encryptedKey = encryptSecret(input.apiKey.trim());
+      existing.defaultModel = model;
+      existing.isDefault = input.isDefault || !user.aiApiKeys.some((key) => key.isDefault && key.id !== existing.id);
+      existing.updatedAt = now;
+      return existing;
+    }
+
+    const key = {
+      id: createId("aikey"),
+      provider: input.provider,
+      label: input.label?.trim() || platformProviderLabel(input.provider),
+      encryptedKey: encryptSecret(input.apiKey.trim()),
+      defaultModel: model,
+      isDefault: input.isDefault || !user.aiApiKeys.some((candidate) => candidate.isDefault),
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    user.aiApiKeys.push(key);
+    return key;
+  });
+
+  const { encryptedKey: _encryptedKey, ...safe } = saved;
+  return safe;
+}
+
+export async function deleteAiApiKey(userId: string, keyId: string) {
+  await updateDb((db) => {
+    const user = db.users.find((candidate) => candidate.id === userId);
+    if (!user?.aiApiKeys) {
+      return;
+    }
+
+    user.aiApiKeys = user.aiApiKeys.filter((key) => key.id !== keyId);
+
+    if (user.aiApiKeys.length && !user.aiApiKeys.some((key) => key.isDefault)) {
+      user.aiApiKeys[0].isDefault = true;
+    }
+  });
+}
+
+async function getUsableAiKey(userId: string, provider?: AiProvider) {
+  const db = await readDb();
+  const user = db.users.find((candidate) => candidate.id === userId);
+  const keys = user?.aiApiKeys ?? [];
+  const userKey = provider ? keys.find((key) => key.provider === provider) : keys.find((key) => key.isDefault) ?? keys[0] ?? null;
+
+  if (userKey) {
+    return userKey;
+  }
+
+  return getServerAiKey(provider);
+}
+
+function platformProviderLabel(provider: AiProvider) {
+  return {
+    openai: "OpenAI",
+    openrouter: "OpenRouter",
+    gemini: "Gemini",
+  }[provider];
+}
+
+function getServerAiKey(provider?: AiProvider) {
+  const candidates: Array<{ provider: AiProvider; apiKey?: string; model: string }> = [
+    { provider: "openai", apiKey: process.env.OPENAI_API_KEY, model: process.env.OPENAI_MODEL || defaultModels.openai },
+    { provider: "openrouter", apiKey: process.env.OPENROUTER_API_KEY, model: process.env.OPENROUTER_MODEL || defaultModels.openrouter },
+    { provider: "gemini", apiKey: process.env.GEMINI_API_KEY, model: process.env.GEMINI_MODEL || defaultModels.gemini },
+  ];
+  const match = provider ? candidates.find((candidate) => candidate.provider === provider) : candidates.find((candidate) => candidate.apiKey);
+
+  if (!match?.apiKey) {
+    return null;
+  }
+
+  const now = new Date().toISOString();
+  return {
+    id: `server_${match.provider}`,
+    provider: match.provider,
+    label: `${platformProviderLabel(match.provider)} server key`,
+    encryptedKey: match.apiKey,
+    defaultModel: match.model,
+    isDefault: true,
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
 export async function validateMcpToken(rawToken: string) {
   const tokenHash = hashSecret(rawToken);
   const db = await readDb();
@@ -348,13 +487,35 @@ export async function validateMcpToken(rawToken: string) {
 
 export async function generateDraftFromPrompt(userId: string, prompt: string) {
   const brand = await getBrandProfile(userId);
-  const content = `🚀 ${prompt.trim() || "New launch update"}\n\nBuilt with OmniSocial OS: clear message, platform-aware copy, and human approval before publishing.`;
+  const key = await getUsableAiKey(userId);
+  const content = await generateWithProvider({
+    key,
+    prompt: `${prompt.trim() || "New launch update"}\n\nBrand voice: ${brand.voice}\nBanned words: ${brand.bannedWords.join(", ")}`,
+    purpose: "draft",
+  });
 
   return createPost(userId, {
-    content: `${content}\n\nVoice: ${brand.voice.slice(0, 120)}`,
+    content,
     targetPlatforms: ["x", "linkedin"],
     status: brand.approvalMode === "draft_only" ? "pending_approval" : "scheduled",
     scheduledFor: brand.approvalMode === "draft_only" ? null : new Date(Date.now() + 1000 * 60 * 60).toISOString(),
     timezone: "Asia/Karachi",
   });
+}
+
+export async function generateAnalyticsStrategy(userId: string, prompt: string, provider?: AiProvider) {
+  const [dashboard, key] = await Promise.all([listDashboardData(userId), getUsableAiKey(userId, provider)]);
+  const strategy = await generateWithProvider({
+    key,
+    prompt,
+    purpose: "strategy",
+    posts: dashboard.posts,
+  });
+
+  return {
+    strategy,
+    provider: key?.provider ?? "local",
+    model: key?.defaultModel ?? "local-fallback",
+    stats: dashboard.stats,
+  };
 }

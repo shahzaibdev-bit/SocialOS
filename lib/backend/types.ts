@@ -7,6 +7,16 @@ export type User = {
   email: string;
   name: string;
   passwordHash: string;
+  aiApiKeys?: Array<{
+    id: string;
+    provider: AiProvider;
+    label: string;
+    encryptedKey: string;
+    defaultModel: string;
+    isDefault?: boolean;
+    createdAt: string;
+    updatedAt: string;
+  }>;
   mcpApiTokens: Array<{
     id: string;
     name: string;
@@ -15,6 +25,18 @@ export type User = {
     lastUsedAt?: string;
   }>;
   createdAt: string;
+};
+
+export type AiProvider = "openai" | "openrouter" | "gemini";
+
+export type SafeAiApiKey = {
+  id: string;
+  provider: AiProvider;
+  label: string;
+  defaultModel: string;
+  isDefault?: boolean;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type Session = {

@@ -23,33 +23,37 @@ export function LoginForm() {
         password: form.get("password"),
       }),
     });
-    const result = await response.json();
-    setLoading(false);
+    try {
+      const result = await response.json();
 
-    if (!result.ok) {
-      setError(result.error);
-      return;
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+
+      router.push("/dashboard");
+      router.refresh();
+    } finally {
+      setLoading(false);
     }
-
-    router.push("/dashboard");
-    router.refresh();
   }
 
   return (
     <form onSubmit={submit} className="space-y-5">
       <label className="block">
-        <span className="text-xs font-pixel text-retro-cyan">EMAIL</span>
-        <input name="email" type="email" required className="mt-2 w-full border-2 border-retro-cyan bg-black p-4 font-mono text-white outline-none" />
+        <span className="text-sm font-medium text-slate-300">Email</span>
+        <input name="email" type="email" required className="mt-2 w-full rounded-2xl border border-white/10 bg-black/30 p-4 text-sm text-white outline-none transition focus:border-retro-cyan" />
       </label>
       <label className="block">
-        <span className="text-xs font-pixel text-retro-cyan">PASSWORD</span>
-        <input name="password" type="password" required className="mt-2 w-full border-2 border-retro-cyan bg-black p-4 font-mono text-white outline-none" />
+        <span className="text-sm font-medium text-slate-300">Password</span>
+        <input name="password" type="password" required className="mt-2 w-full rounded-2xl border border-white/10 bg-black/30 p-4 text-sm text-white outline-none transition focus:border-retro-cyan" />
       </label>
-      {error && <p className="border-2 border-retro-magenta bg-retro-magenta/10 p-3 text-sm text-retro-magenta">{error}</p>}
-      <button disabled={loading} className="w-full border-2 border-retro-magenta bg-retro-magenta px-6 py-4 font-pixel text-xs uppercase text-white shadow-retro-cyan disabled:opacity-60">
-        {loading ? "LOGGING IN..." : "LOGIN"}
+      {error && <p className="rounded-2xl border border-retro-magenta/30 bg-retro-magenta/10 p-3 text-sm text-retro-magenta">{error}</p>}
+      <button disabled={loading} className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-retro-magenta px-6 py-4 text-sm font-semibold text-white transition hover:brightness-110 disabled:opacity-60">
+        {loading && <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />}
+        {loading ? "Logging in..." : "Login"}
       </button>
-      <p className="text-center text-sm text-gray-400">
+      <p className="text-center text-sm text-slate-400">
         New operator? <Link href="/signup" className="text-retro-yellow underline">Create an account</Link>
       </p>
     </form>

@@ -19,7 +19,7 @@ export default function Home() {
   }
 
   return (
-    <>
+    <div className="font-mono crt">
       <DigitalDust />
       <main className="flex min-h-screen flex-col items-center justify-between w-full relative z-10 overflow-hidden">
         <Navbar />
@@ -32,6 +32,6 @@ export default function Home() {
         </div>
         <Footer />
       </main>
-    </>
+    </div>
   );
 }

@@ -37,7 +37,8 @@ export async function ensureMongoIndexes() {
   const db = await getMongoDb();
 
   await Promise.all([
-    db.collection("users").createIndex({ email: 1 }, { unique: true }),
+      db.collection("users").createIndex({ email: 1 }, { unique: true }),
+      db.collection("users").createIndex({ id: 1 }, { unique: true }),
     db.collection("sessions").createIndex({ tokenHash: 1 }, { unique: true }),
     db.collection("sessions").createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 }),
     db.collection("connectedAccounts").createIndex({ userId: 1, platform: 1 }, { unique: true }),

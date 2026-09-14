@@ -40,6 +40,7 @@ export async function signUpUser(input: { name: string; email: string; password:
       email,
       name,
       passwordHash: hashPassword(input.password),
+      aiApiKeys: [],
       mcpApiTokens: [],
       createdAt: now,
     };
