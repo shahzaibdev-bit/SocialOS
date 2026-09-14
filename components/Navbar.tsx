@@ -22,6 +22,12 @@ export default function Navbar() {
         <Magnet>
           <a href="#pricing" className="hover:text-retro-cyan transition-colors">Pricing</a>
         </Magnet>
+        <Magnet>
+          <Link href="/privacy" className="hover:text-retro-cyan transition-colors">Privacy</Link>
+        </Magnet>
+        <Magnet>
+          <Link href="/terms" className="hover:text-retro-yellow transition-colors">Terms</Link>
+        </Magnet>
       </div>
 
       <ClickSpark sparkColor="#00F0FF">

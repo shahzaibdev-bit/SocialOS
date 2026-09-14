@@ -3,6 +3,7 @@
 import { LogoLoop } from "./react-bits/LogoLoop";
 import { GlitchText } from "./react-bits/GlitchText";
 import { ScrollReveal } from "./ScrollReveal";
+import Link from "next/link";
 
 export default function Footer() {
   const platforms = ["Twitter (X)", "Meta", "LinkedIn", "TikTok", "Reddit", "Discord", "Slack", "Mastodon"];
@@ -21,9 +22,9 @@ export default function Footer() {
         </div>
         
         <div className="flex gap-8 font-pixel text-xs text-gray-400">
-          <a href="#" className="hover:text-retro-cyan transition-colors">Documentation</a>
-          <a href="#" className="hover:text-retro-magenta transition-colors">API Status</a>
-          <a href="#" className="hover:text-retro-yellow transition-colors">Terms of Service</a>
+          <a href="https://github.com/shahzaibdev-bit/SocialOS" className="hover:text-retro-cyan transition-colors">GitHub</a>
+          <Link href="/privacy" className="hover:text-retro-magenta transition-colors">Privacy Policy</Link>
+          <Link href="/terms" className="hover:text-retro-yellow transition-colors">Terms of Service</Link>
         </div>
       </ScrollReveal>
     </footer>
