@@ -1,19 +1,18 @@
 import { MongoClient, type Db } from "mongodb";
 
-const uri = process.env.MONGODB_URI;
 const dbName = process.env.MONGODB_DB_NAME || "omnisocial_os";
-
-if (!uri) {
-  throw new Error("MONGODB_URI is not configured.");
-}
-
-const mongoUri = uri;
 
 declare global {
   var omniMongoClientPromise: Promise<MongoClient> | undefined;
 }
 
 function getMongoClientPromise() {
+  const mongoUri = process.env.MONGODB_URI;
+
+  if (!mongoUri) {
+    throw new Error("MONGODB_URI is not configured.");
+  }
+
   if (!globalThis.omniMongoClientPromise) {
     globalThis.omniMongoClientPromise = new MongoClient(mongoUri, {
       appName: "OmniSocial OS",

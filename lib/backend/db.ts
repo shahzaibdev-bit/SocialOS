@@ -11,9 +11,10 @@ const emptyDb: OmniDatabase = {
   brandProfiles: [],
 };
 
-const fallbackPath = path.join(process.cwd(), "data", "omnisocial-dev-db.json");
-const fallbackEnabled = process.env.MONGODB_FALLBACK_TO_FILE !== "false";
-const storageMode = process.env.MONGODB_STORAGE_MODE ?? (process.env.NODE_ENV === "development" ? "file" : "mongo");
+const isProduction = process.env.NODE_ENV === "production";
+const fallbackPath = isProduction ? path.join("/tmp", "omnisocial-dev-db.json") : path.join(process.cwd(), "data", "omnisocial-dev-db.json");
+const storageMode = isProduction ? "mongo" : process.env.MONGODB_STORAGE_MODE ?? "file";
+const fallbackEnabled = !isProduction && process.env.MONGODB_FALLBACK_TO_FILE !== "false";
 let mongoUnavailableUntil = 0;
 let lastMongoError = "";
 

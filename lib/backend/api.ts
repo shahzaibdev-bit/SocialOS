@@ -26,10 +26,10 @@ export function handleApiError(error: unknown) {
 
   if (
     error instanceof Error &&
-    (/querySrv|ECONNREFUSED|server selection|MONGODB_URI/i.test(error.message) ||
-      "code" in error && error.code === "ECONNREFUSED")
+    (/querySrv|ECONNREFUSED|ENOTFOUND|ETIMEOUT|server selection|MONGODB_URI/i.test(error.message) ||
+      ("code" in error && ["ECONNREFUSED", "ENOTFOUND", "ETIMEOUT"].includes(String(error.code))))
   ) {
-    return fail("Database is configured, but MongoDB Atlas is not reachable from this machine/network right now.", 503);
+    return fail("Database is not reachable. Please check the MongoDB Atlas environment variables in Vercel.", 503);
   }
 
   return fail(error instanceof Error ? error.message : "Something went wrong.");
