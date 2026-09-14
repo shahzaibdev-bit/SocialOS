@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+@theme {
+  --color-retro-bg: #0D0D12;
+  --color-retro-cyan: #00F0FF;
+  --color-retro-magenta: #FF003C;
+  --color-retro-yellow: #FFD700;
+  
+  --font-pixel: var(--font-press-start-2p);
+  --font-mono: var(--font-jetbrains-mono);
+  --font-vt323: var(--font-vt323);
+}
+
+@layer utilities {
+  .shadow-retro-cyan {
+    box-shadow: 4px 4px 0px 0px var(--color-retro-cyan);
+  }
+  .shadow-retro-magenta {
+    box-shadow: 4px 4px 0px 0px var(--color-retro-magenta);
+  }
+  .shadow-retro-yellow {
+    box-shadow: 4px 4px 0px 0px var(--color-retro-yellow);
+  }
+  .shadow-retro-cyan-hover {
+    box-shadow: 2px 2px 0px 0px var(--color-retro-cyan);
+  }
+}
+
+body {
+  background-color: var(--color-retro-bg);
+  color: white;
+  font-family: var(--font-mono);
+  overflow-x: hidden;
+}
+
+/* CRT Flicker Effect */
+.crt::before {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: linear-gradient(
+      rgba(18, 16, 16, 0) 50%,
+      rgba(0, 0, 0, 0.1) 50%
+    ),
+    linear-gradient(
+      90deg,
+      rgba(255, 0, 0, 0.03),
+      rgba(0, 255, 0, 0.01),
+      rgba(0, 0, 255, 0.03)
+    );
+  z-index: 100;
+  background-size: 100% 2px, 3px 100%;
+  pointer-events: none;
+}

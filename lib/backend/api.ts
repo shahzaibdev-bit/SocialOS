@@ -1,0 +1,36 @@
+import { NextResponse } from "next/server";
+import { getCurrentUser } from "./auth";
+
+export function ok<T>(data: T, init?: ResponseInit) {
+  return NextResponse.json({ ok: true, data }, init);
+}
+
+export function fail(message: string, status = 400) {
+  return NextResponse.json({ ok: false, error: message }, { status });
+}
+
+export async function requireApiUser() {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    throw new Error("AUTH_REQUIRED");
+  }
+
+  return user;
+}
+
+export function handleApiError(error: unknown) {
+  if (error instanceof Error && error.message === "AUTH_REQUIRED") {
+    return fail("Please log in first.", 401);
+  }
+
+  if (
+    error instanceof Error &&
+    (/querySrv|ECONNREFUSED|server selection|MONGODB_URI/i.test(error.message) ||
+      "code" in error && error.code === "ECONNREFUSED")
+  ) {
+    return fail("Database is configured, but MongoDB Atlas is not reachable from this machine/network right now.", 503);
+  }
+
+  return fail(error instanceof Error ? error.message : "Something went wrong.");
+}
